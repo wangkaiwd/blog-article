@@ -25,7 +25,47 @@
 const slider = new Slider('#wk-slider',{autoPlay: true});
 ```
 
-
+为了页面的美观，我们添加一些初始化样式  
+```css
+/*初始化样式*/
+* {
+  margin: 0;
+  padding: 0;
+}
+*,
+*::after,
+*::before {
+  box-sizing: inherit;
+}
+/*
+  通配符的css权重是最低的，html的标签都会继承box-sizing
+  并且对应元素进行盒模型更改的时候，对应的子元素也会更改
+*/
+html {
+  box-sizing: border-box;
+}
+```
+用户自己的样式是这样的： 
+```css
+/*用户样式*/
+.demo-wrapper {
+  margin: 40px;
+}
+.slider {
+  margin: 0 auto;
+  border: 4px solid black;
+  overflow: hidden;
+}
+.slider-item {
+  width: 400px;
+  height: 200px;
+  background-color: pink;
+  font-size: 80px;
+  text-align: center;
+  line-height: 200px;
+  color: #fff;
+}
+```
 
 ### 无缝轮播
 
