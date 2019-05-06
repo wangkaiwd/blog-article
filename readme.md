@@ -22,7 +22,7 @@
 </div>
 ```
 ```js
-const slider = new Slider('#wk-slider',{autoPlay: true});
+const slider = new Slider('#wk-slider',options);
 ```
 
 为了页面的美观，我们添加一些初始化样式  
@@ -67,6 +67,182 @@ html {
 }
 ```
 
+接下来我们进行`js`逻辑的实现。  
+
+由于组件在使用时第一个参数为`element`，第二个参数为`options`配置项，所以我们的构造函数需要这样写：
+```js
+class Slider {
+  constructor (element, options) {
+    this.slider = document.querySelector(element);
+    this.options = options;
+  }
+}
+```
+之后我们要获取到轮播项的对应的宽度赋值到`slider`元素上，并为对应的元素添加特定前缀的`css`类名，防止样式冲突。而且由于要让整个子元素进行平移，还要将所有子元素放到一起，然后再进行平移，并通过`transition`设置过渡动效。
+
+我们在构造函数的原型上添加对应的方法
+```js
+initSliderStyle () {
+  this.items = [...this.slider.children];
+  // 这里获取宽度时要小心异步加载
+  this.itemWidth = this.items[0].offsetWidth;
+  this.slider.classList.add('wk-slider');
+  this.slider.style.width = `${this.itemWidth}px`;
+  this.createItemsWrapper();
+}
+
+createItemsWrapper () {
+  this.itemsWrapper = document.createElement('div');
+  this.itemsWrapper.classList.add('wk-slider-items-wrapper');
+  this.slider.appendChild(this.itemsWrapper);
+  this.items.map(item => {
+    this.itemsWrapper.appendChild(item);
+    item.classList.add('wk-slider-item');
+  });
+}
+```
+
+对应的组件`css`： 
+```css
+/*组件样式*/
+.wk-slider {
+  display: flex;
+}
+.wk-slider-item {
+  flex-shrink: 0;
+}
+.wk-slider-items-wrapper {
+  display: flex;
+  flex-shrink: 0;
+  transition: all 1s;
+}
+```
+
+最后我们为子元素容器设置定时器，让子元素动起来： 
+```js
+autoPlay () {
+  if (!this.options.autoPlay) return;
+  setInterval(() => {
+    this.index++;
+    this.go(this.index);
+  }, 2000);
+}
+
+go (index) {
+  const lastIndex = this.items.length - 1;
+  if (index > lastIndex) {this.index = 0;}
+  if (index < 0) {this.index = lastIndex;}
+  this.itemsWrapper.style.transform = `translateX(${-this.itemWidth * this.index}px)`;
+}
+```
+
+完整代码如下： 
+```js
+ class Slider {
+    constructor (element, options) {
+      this.slider = document.querySelector(element);
+      this.options = options;
+      this.index = 0;
+      this.initSliderStyle();
+      this.autoPlay();
+    }
+
+    initSliderStyle () {
+      this.items = [...this.slider.children];
+      // 这里获取宽度时要小心异步加载
+      this.itemWidth = this.items[0].offsetWidth;
+      this.slider.classList.add('wk-slider');
+      this.slider.style.width = `${this.itemWidth}px`;
+      this.createItemsWrapper();
+    }
+
+    createItemsWrapper () {
+      this.itemsWrapper = document.createElement('div');
+      this.itemsWrapper.classList.add('wk-slider-items-wrapper');
+      this.slider.appendChild(this.itemsWrapper);
+      this.items.map(item => {
+        this.itemsWrapper.appendChild(item);
+        item.classList.add('wk-slider-item');
+      });
+    }
+
+    autoPlay () {
+      if (!this.options.autoPlay) return;
+      setInterval(() => {
+        this.index++;
+        this.go(this.index);
+      }, 2000);
+    }
+
+    go (index) {
+      const lastIndex = this.items.length - 1;
+      if (index > lastIndex) {this.index = 0;}
+      if (index < 0) {this.index = lastIndex;}
+      this.itemsWrapper.style.transform = `translateX(${-this.itemWidth * this.index}px)`;
+    }
+  }
+
+  const slider = new Slider('.slider', { autoPlay: true });
+```
+```css
+/*初始化样式*/
+* {
+  margin: 0;
+  padding: 0;
+}
+*,
+*::after,
+*::before {
+  box-sizing: inherit;
+}
+/*
+  通配符的css权重是最低的，html的标签都会继承box-sizing
+  并且对应元素进行盒模型更改的时候，对应的子元素也会更改
+*/
+html {
+  box-sizing: border-box;
+}
+
+/*用户样式*/
+.demo-wrapper {
+  margin: 40px;
+}
+.slider {
+  margin: 0 auto;
+  border: 4px solid black;
+  overflow: hidden;
+}
+.slider-item {
+  width: 400px;
+  height: 200px;
+  background-color: pink;
+  font-size: 80px;
+  text-align: center;
+  line-height: 200px;
+  color: #fff;
+}
+
+/*组件样式*/
+.wk-slider {
+  display: flex;
+}
+.wk-slider-item {
+  flex-shrink: 0;
+}
+.wk-slider-items-wrapper {
+  display: flex;
+  flex-shrink: 0;
+  transition: all 1s;
+}
+```
+
+这样一个简单的有缝轮播组件就初步完成了。但是这里我们忽略了一个问题：当我们的`slide-item`是图片的时候，由于图片的异步加载，会导致获取的宽度并不准确，我想到的解决方法是在`onload`事件之后再进行组件的使用：  
+```js
+window.onload = () => {
+  const slider = new Slider('.slider', { autoPlay: true });
+}
+```
+小伙伴也可以自己想一些其它的解决方法，展现奇思妙想的时候到了。
 ### 无缝轮播
 
 ### `vue`版本
