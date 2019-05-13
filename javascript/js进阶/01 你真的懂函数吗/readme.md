@@ -22,9 +22,31 @@ document.addEventListener('click',function() {
   // some code
 })
 
-// 自执行函数
+// 自执行匿名函数
 (function() {
   // some code
 })()
 
 ```
+
+接下来我们认识一下具名函数：  
+```js
+function fn () {
+  // some code
+}
+
+// 要注意这里fn2的作用域只是作用于函数内部
+const fn1 = function fn2 () {
+  // some code
+}
+console.log(fn,fn2) // error: Uncaught: fn2 is not defined
+```
+
+最后我们介绍一下箭头函数。这是一个`es6`新提出的语法，相较于普通函数，箭头函数中的`this`指向最近父级作用域内的`this`。常用的写法如下：  
+```js
+// 只有一个参数可以省略参数的括号
+const fn = i => i+1
+
+const fn1 = (i,j) => i+j
+```
+
