@@ -15,7 +15,7 @@
 
 现在假设我们是使用插件的用户，我们理想中的使用方式大概是这样的：  
 ```html
-<div class="wk-slider">
+<div class="slider">
   <div class="slider-item">1</div>
   <div class="slider-item">2</div>
   <div class="slider-item">3</div>
@@ -135,6 +135,8 @@ go (index) {
   this.itemsWrapper.style.transform = `translateX(${-this.itemWidth * this.index}px)`;
 }
 ```
+最终效果：  
+![hasSpace](./screenshots/hasSpaceSliders.gif)
 
 完整代码如下： 
 ```js
@@ -244,7 +246,36 @@ window.onload = () => {
 ```
 小伙伴也可以自己想一些其它的解决方法，展现奇思妙想的时候到了。
 ### 无缝轮播
+有缝轮播其实是无缝轮播的一个升级版本，当图片轮播到最后一项的时候，可以继续像之前一样轮播到第一项，并不会有回退效果。
 
+大概的一个思路如下：  
+* 分别复制轮播的第一项和第最后一项，然后再分别插入到最后一项和第一项
+* 如果是正向轮播：轮播到最后一项时，继续轮播会进入复制的第一项，之后再闪动到真正的第一项，继续轮播
+* 如果是逆向轮播：轮播到第一项时，会继续轮播到复制的最后一项，之后闪动到真正的最后一项，继续轮播
+
+接下来我们一步一步来操作。
+
+首先我们分别复制第一项和最后一项插入到对应的位置：
+```js
+appendCloneNode() {
+  const first = this.items[0];
+  const last = this.items[this.items.length - 1];
+  const firstClone = first.cloneNode(true);
+  const lastClone = last.cloneNode(true);
+  this.slider.insertBefore(lastClone, first);
+  this.slider.appendChild(firstClone);
+  this.items = [...this.slider.children];
+}
+```
+页面布局如下： 
+![sliderNoSpace](./screenshots/slider-noSpace.png)
+这里我们复习几个原生语法：
+* `Node.cloneNode()`: 克隆一个节点，返回调用该方法的节点的一个副本。如果参数传入`true`，会克隆当前节点的所有后代节点。如果为`false`,则只克隆该节点本身。默认参数为`false`。
+* `parentNode.insertBefore(newNode,referenceNode)`: 在参考节点之前插入一个拥有指定父节点的子节点。
+  
+之后，我们要分别对最后一项到第一项以及第一项到最后一项进行处理。
+```js
+```
 ### `vue`版本
 
 ### 移动端兼容
