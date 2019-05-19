@@ -253,6 +253,10 @@ window.onload = () => {
 * 如果是正向轮播：轮播到最后一项时，继续轮播会进入复制的第一项，之后再闪动到真正的第一项，继续轮播
 * 如果是逆向轮播：轮播到第一项时，会继续轮播到复制的最后一项，之后闪动到真正的最后一项，继续轮播
 
+这里我们先复习几个原生`js`语法：
+* `Node.cloneNode()`: 克隆一个节点，返回调用该方法的节点的一个副本。如果参数传入`true`，会克隆当前节点的所有后代节点。如果为`false`,则只克隆该节点本身。默认参数为`false`。
+* `parentNode.insertBefore(newNode,referenceNode)`: 在参考节点之前插入一个拥有指定父节点的子节点。
+  
 接下来我们一步一步来操作。
 
 首先我们分别复制第一项和最后一项插入到对应的位置：
@@ -269,12 +273,29 @@ appendCloneNode() {
 ```
 页面布局如下： 
 ![sliderNoSpace](./screenshots/slider-noSpace.png)
-这里我们复习几个原生语法：
-* `Node.cloneNode()`: 克隆一个节点，返回调用该方法的节点的一个副本。如果参数传入`true`，会克隆当前节点的所有后代节点。如果为`false`,则只克隆该节点本身。默认参数为`false`。
-* `parentNode.insertBefore(newNode,referenceNode)`: 在参考节点之前插入一个拥有指定父节点的子节点。
   
 之后，我们要分别对最后一项到第一项以及第一项到最后一项进行处理。
 ```js
+// 第一张到最后一张
+firstToLast (lastIndex) {
+  const { itemsWrapper, itemWidth } = this;
+  itemsWrapper.style.transition = 'none';
+  this.index = lastIndex - 1;
+  itemsWrapper.style.transform = `translateX(${-itemWidth * this.index}px)`;
+  this.index--;
+  itemsWrapper.offsetWidth;
+  itemsWrapper.style.transition = 'all 1s';
+}
+// 最后一张到第一张
+lastToFirst () {
+  const { itemsWrapper, itemWidth } = this;
+  itemsWrapper.style.transition = 'none';
+  this.index = 1;
+  itemsWrapper.style.transform = `translateX(${-itemWidth * this.index}px)`;
+  this.index++;
+  itemsWrapper.offsetWidth;
+  itemsWrapper.style.transition = 'all 1s';
+}
 ```
 ### `vue`版本
 
