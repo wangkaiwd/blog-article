@@ -1,19 +1,27 @@
-## 
+## 原生`js`实现一个轮播组件
 最近自己使用`vue`实现了`carousel`轮播组件，整体上的思路和之前的原生`js`有很大的区别，对应的动画效果的实现是一个比较大的难点。这我们用原生`js`来实现轮播组件，方便我们对框架和原生实现方式有一个认知和对比，也正好复习一下原生和`DOM`相关的`API`。
+
+在样式方面，大家可以发挥自己的想象力，也可以参考社区其它的类似组件，这里我实现了一个简易样式版本，供大家参考：  
+* 预览地址：https://wangkaiwd.github.io/vue-example/src/views/vueTransition/slider1.html
+* 源码地址：https://github.com/wangkaiwd/vue-example/blob/master/src/views/vueTransition/slider1.html
+
+`vue`版本的在这里，并且支持移动端滑动切换： 
+* 预览地址：https://wangkaiwd.github.io/smile-ui/views/carousel.html
+* 源码地址：https://github.com/wangkaiwd/smile-ui/blob/master/src/components/smileCarousel/carousel.vue
 
 在实现组件之前，我们需要先了解一下有逢轮播和无缝轮播。  
 
 有缝轮播在轮播项正向移动到第一项或反向移动到最后一项时，会有一个回退效果。而无缝轮播会让人感觉不到这个切换效果。
 
-接下来我们一步步先通过原生`js`实现一个有缝轮播，之后升级到无缝轮播，最终使用`vue`来重新实现
+接下来我们一步步通过原生`js`先实现一个有缝轮播，之后升级到无缝轮播，实现最终效果。
 ### 有缝轮播
-有缝轮播相对来说在实现思路上会简单一些，主要是利用了`css3`提供的`transiton`、`translate`属性来进行动画效果的实现。
+有缝轮播相对来说在实现思路上会简单一些，主要是利用了`css3`提供的`transiton`、`translate`属性来实现切换的动画效果。
 
 首先搭建初始的页面结构，效果大概是这样的：
 ![slider-init](./screenshots/slider-init.png)  
 之后我们会在这个基础上让1,2,3动起来
 
-现在假设我们是使用插件的用户，我们理想中的使用方式大概是这样的：  
+现在假设我们是使用组件的用户，我们理想中的使用方式大概是这样的：  
 ```html
 <div class="slider">
   <div class="slider-item">1</div>
@@ -250,7 +258,7 @@ window.onload = () => {
 有缝轮播其实是无缝轮播的一个升级版本，当图片轮播到最后一项的时候，可以继续像之前一样轮播到第一项，并不会有回退效果。
 
 大概的一个思路如下：  
-* 分别复制轮播的第一项和第最后一项，然后再分别插入到最后一项和第一项
+* 分别复制轮播的第一项和最后一项，然后再分别插入到最后一项和第一项
 * 如果是正向轮播：轮播到最后一项时，继续轮播会进入复制的第一项，之后再闪动到真正的第一项，继续轮播
 * 如果是逆向轮播：轮播到第一项时，会继续轮播到复制的最后一项，之后闪动到真正的最后一项，继续轮播
 
@@ -309,23 +317,17 @@ firstToLast (lastIndex) {
 而这里特别令人疑惑的一个地方：`itemsWrapper.offsetWidth`。整体上来看，这一行代码和整个的逻辑并没有任何关系，但是这里涉及到有关浏览器重排、重绘的一个重要知识点：  
 > DOM变动和样式变动，都会触发浏览器的重新渲染。但是，浏览器比较智能，会尽量把所有的变动集中在一起，排成一个队列，然后一次性执行，尽量避免多次重新渲染。
 
-接下来我们回到上边的代码，浏览器智能的将`itemsWrapper.style.transition="none"`和`itemsWrapper.style.transition = "all 1s"`进行合并后执行，而我们要做的是强制浏览器进行重新渲染，让这俩行代码分别执行，而`itemsWrapper.offsetWidth`就可以强制浏览器进行重新渲染。类似的属性和方法还有很多，以下是我收集的一些文章，希望能对帮助大家理解：   
+接下来我们回到上边的代码：浏览器智能的将`itemsWrapper.style.transition="none"`和`itemsWrapper.style.transition = "all 1s"`进行合并后执行，而我们要做的是强制浏览器进行重新渲染，让这俩行代码分别执行，而`itemsWrapper.offsetWidth`就可以强制浏览器进行重新渲染。类似的属性和方法还有很多，以下是我收集的一些文章，希望对大家的知识理解有帮助：   
 * [What forces layout / reflow](https://gist.github.com/paulirish/5d52fb081b3570c81e3a)
 * [Force browser to trigger reflow while changing CSS](https://stackoverflow.com/questions/21664940/force-browser-to-trigger-reflow-while-changing-css)
 * [网页性能管理详解](https://www.ruanyifeng.com/blog/2015/09/web-page-performance-in-depth.html)
 
-接下来的工作相对来说就会很简单了，我这里不再赘述，大概的工作是这样的：  
+到这里，主要的逻辑功能已经基本上完成了。接下来的工作相对来说就会很简单了，我这里不再赘述，大概的工作是这样的：  
 * 添加左右箭头
 * 添加下侧点击切换的控制条
 * 在鼠标移入轮播区域的时候停止轮播，鼠标离开轮播区域时继续轮播
 
-在样式方面，大家可以发挥自己的想象力，也可以参考社区其它的类似组件，这里我实现了一个简易样式版本，供大家参考：  
-* 预览地址：https://wangkaiwd.github.io/vue-example/src/views/vueTransition/slider1.html
-* 源码地址：https://github.com/wangkaiwd/vue-example/blob/master/src/views/vueTransition/slider1.html
-
-`vue`版本的在这里，并且支持移动端滑动切换： 
-* 预览地址：https://wangkaiwd.github.io/smile-ui/views/carousel.html
-* 源码地址：https://github.com/wangkaiwd/smile-ui/blob/master/src/components/smileCarousel/carousel.vue
+之后我们可以通过传入的`options`来让用户自己控制是否支持自动轮播，是否需要左右箭头和下侧控制条，也可以让用户自定义轮播的时间间隔。
 
 
 
