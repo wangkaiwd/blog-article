@@ -1,5 +1,5 @@
-## `carousel`组件实现
-最近自己使用`vue`实现了`carousel`轮播组件，整体上的思路和之前的原生`js`有很大的区别，对应的动画效果的实现是一个比较大的难点。这里分别用原生`js`和`vue`来实现轮播组件，方便我们对框架和原生实现方式有一个认知和对比。
+## 
+最近自己使用`vue`实现了`carousel`轮播组件，整体上的思路和之前的原生`js`有很大的区别，对应的动画效果的实现是一个比较大的难点。这我们用原生`js`来实现轮播组件，方便我们对框架和原生实现方式有一个认知和对比，也正好复习一下原生和`DOM`相关的`API`。
 
 在实现组件之前，我们需要先了解一下有逢轮播和无缝轮播。  
 
@@ -22,7 +22,7 @@
 </div>
 ```
 ```js
-const slider = new Slider('#wk-slider',options);
+const slider = new Slider('.wk-slider',options);
 ```
 
 为了页面的美观，我们添加一些初始化样式  
@@ -140,51 +140,52 @@ go (index) {
 
 完整代码如下： 
 ```js
- class Slider {
-    constructor (element, options) {
-      this.slider = document.querySelector(element);
-      this.options = options;
-      this.index = 0;
-      this.initSliderStyle();
-      this.autoPlay();
-    }
-
-    initSliderStyle () {
-      this.items = [...this.slider.children];
-      // 这里获取宽度时要小心异步加载
-      this.itemWidth = this.items[0].offsetWidth;
-      this.slider.classList.add('wk-slider');
-      this.slider.style.width = `${this.itemWidth}px`;
-      this.createItemsWrapper();
-    }
-
-    createItemsWrapper () {
-      this.itemsWrapper = document.createElement('div');
-      this.itemsWrapper.classList.add('wk-slider-items-wrapper');
-      this.slider.appendChild(this.itemsWrapper);
-      this.items.map(item => {
-        this.itemsWrapper.appendChild(item);
-        item.classList.add('wk-slider-item');
-      });
-    }
-
-    autoPlay () {
-      if (!this.options.autoPlay) return;
-      setInterval(() => {
-        this.index++;
-        this.go(this.index);
-      }, 2000);
-    }
-
-    go (index) {
-      const lastIndex = this.items.length - 1;
-      if (index > lastIndex) {this.index = 0;}
-      if (index < 0) {this.index = lastIndex;}
-      this.itemsWrapper.style.transform = `translateX(${-this.itemWidth * this.index}px)`;
-    }
+class Slider {
+  constructor (element, options) {
+    this.slider = document.querySelector(element);
+    this.options = options;
+    this.index = 0;
+    this.initSliderStyle();
+    this.autoPlay();
   }
 
-  const slider = new Slider('.slider', { autoPlay: true });
+  initSliderStyle () {
+    this.items = [...this.slider.children];
+    // 这里获取宽度时要小心异步加载
+    this.itemWidth = this.items[0].offsetWidth;
+    this.slider.classList.add('wk-slider');
+    this.slider.style.width = `${this.itemWidth}px`;
+    this.createItemsWrapper();
+  }
+
+  createItemsWrapper () {
+    this.itemsWrapper = document.createElement('div');
+    this.itemsWrapper.classList.add('wk-slider-items-wrapper');
+    this.slider.appendChild(this.itemsWrapper);
+    this.items.map(item => {
+      this.itemsWrapper.appendChild(item);
+      item.classList.add('wk-slider-item');
+    });
+  }
+
+  autoPlay () {
+    if (!this.options.autoPlay) return;
+    setInterval(() => {
+      this.index++;
+      this.go(this.index);
+    }, 2000);
+  }
+
+  go (index) {
+    const lastIndex = this.items.length - 1;
+    const { itemsWrapper, itemWidth } = this;
+    if (this.index > lastIndex) { this.lastToFirst(); }
+    if (this.index < 0) { this.firstToLast(lastIndex); }
+    itemsWrapper.style.transform = `translateX(${-itemWidth * this.index}px)`;
+  }
+}
+
+const slider = new Slider('.slider', { autoPlay: true });
 ```
 ```css
 /*初始化样式*/
@@ -276,9 +277,25 @@ appendCloneNode() {
   
 之后，我们要分别对最后一项到第一项以及第一项到最后一项进行处理。
 ```js
-// 第一张到最后一张
+// 最后一张到第一张
+lastToFirst () {
+  const { itemsWrapper, itemWidth } = this;
+  // 将transition效果取消
+  itemsWrapper.style.transition = 'none';
+  // 将索引设置为1
+  this.index = 1;
+  // 直接移动到第二张(没有过渡效果)
+  itemsWrapper.style.transform = `translateX(${-itemWidth * this.index}px)`;
+  // 索引+1
+  this.index++;
+  itemsWrapper.offsetWidth;
+  // 添加动画效果，通过go方法移动到第三章
+  itemsWrapper.style.transition = 'all 1s';
+}
+// 第一张到最后一张（代码含义同上）
 firstToLast (lastIndex) {
   const { itemsWrapper, itemWidth } = this;
+  // 将transition效果取消
   itemsWrapper.style.transition = 'none';
   this.index = lastIndex - 1;
   itemsWrapper.style.transform = `translateX(${-itemWidth * this.index}px)`;
@@ -286,17 +303,16 @@ firstToLast (lastIndex) {
   itemsWrapper.offsetWidth;
   itemsWrapper.style.transition = 'all 1s';
 }
-// 最后一张到第一张
-lastToFirst () {
-  const { itemsWrapper, itemWidth } = this;
-  itemsWrapper.style.transition = 'none';
-  this.index = 1;
-  itemsWrapper.style.transform = `translateX(${-itemWidth * this.index}px)`;
-  this.index++;
-  itemsWrapper.offsetWidth;
-  itemsWrapper.style.transition = 'all 1s';
-}
 ```
+上边的代码是轮播的一个重要思路：**将最后一张/第一张“闪动”到自己复制出来的哪一项，之后恢复过渡，继续轮播**
+
+而这里特别令人疑惑的一个地方：`itemsWrapper.offsetWidth`。整体上来看，这一行代码和整个的逻辑并没有任何关系，但是这里涉及到有关浏览器重排、重绘的一个重要知识点：  
+> DOM变动和样式变动，都会触发浏览器的重新渲染。但是，浏览器比较智能，会尽量把所有的变动集中在一起，排成一个队列，然后一次性执行，尽量避免多次重新渲染。
+
+接下来我们回到上边的代码，浏览器智能的将`itemsWrapper.style.transition="none"`和`itemsWrapper.style.transition = "all 1s"`进行合并后执行，而我们要做的是强制浏览器进行重新渲染，让这俩行代码分别执行，而`itemsWrapper.offsetWidth`就可以强制浏览器进行重新渲染。类似的属性和方法还有很多，以下是我收集的一些文章，希望能对帮助大家理解：   
+* [What forces layout / reflow](https://gist.github.com/paulirish/5d52fb081b3570c81e3a)
+* [Force browser to trigger reflow while changing CSS](https://stackoverflow.com/questions/21664940/force-browser-to-trigger-reflow-while-changing-css)
+* [网页性能管理详解](https://www.ruanyifeng.com/blog/2015/09/web-page-performance-in-depth.html)
 ### `vue`版本
 
 ### 移动端兼容
