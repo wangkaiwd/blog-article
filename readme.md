@@ -313,6 +313,19 @@ firstToLast (lastIndex) {
 * [What forces layout / reflow](https://gist.github.com/paulirish/5d52fb081b3570c81e3a)
 * [Force browser to trigger reflow while changing CSS](https://stackoverflow.com/questions/21664940/force-browser-to-trigger-reflow-while-changing-css)
 * [网页性能管理详解](https://www.ruanyifeng.com/blog/2015/09/web-page-performance-in-depth.html)
-### `vue`版本
 
-### 移动端兼容
+接下来的工作相对来说就会很简单了，我这里不再赘述，大概的工作是这样的：  
+* 添加左右箭头
+* 添加下侧点击切换的控制条
+* 在鼠标移入轮播区域的时候停止轮播，鼠标离开轮播区域时继续轮播
+
+在样式方面，大家可以发挥自己的想象力，也可以参考社区其它的类似组件，这里我实现了一个简易样式版本，供大家参考：  
+* 预览地址：https://wangkaiwd.github.io/vue-example/src/views/vueTransition/slider1.html
+* 源码地址：https://github.com/wangkaiwd/vue-example/blob/master/src/views/vueTransition/slider1.html
+
+`vue`版本的在这里，并且支持移动端滑动切换： 
+* 预览地址：https://wangkaiwd.github.io/smile-ui/views/carousel.html
+* 源码地址：https://github.com/wangkaiwd/smile-ui/blob/master/src/components/smileCarousel/carousel.vue
+
+
+
